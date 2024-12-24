@@ -16,7 +16,24 @@ import {
   ResponsiveContainer 
 } from 'recharts';
 
-
+const LatexParser = ({ text }) => {
+  // Split text by LaTeX delimiters
+  const segments = text.split(/(\$.*?\$)/g);
+  
+  return (
+    <span>
+      {segments.map((segment, index) => {
+        if (segment.startsWith('$') && segment.endsWith('$')) {
+          // Remove the $ delimiters and render as LaTeX
+          const latex = segment.slice(1, -1);
+          return <InlineMath key={index}>{latex}</InlineMath>;
+        }
+        // Regular text
+        return <span key={index}>{segment}</span>;
+      })}
+    </span>
+  );
+};
 
 const TableDisplay = ({ data }) => {
   if (!data || !data.length) return null;
@@ -100,8 +117,6 @@ const QuestionGraph = ({ graphData, graphType, width = 400, height = 300 }) => {
 
   return graphs[graphType] || null;
 };
-
-
 
 const QuizContent = ({ questions, onQuizComplete }) => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -202,7 +217,11 @@ const QuizContent = ({ questions, onQuizComplete }) => {
       <div className="bg-white rounded-lg shadow-lg p-6">
         <div className="mb-6">
           <h2 className="text-xl font-bold mb-2">Question {currentQuestion + 1}/{questions.length}</h2>
-          <p className="mb-2">{question.question}</p>
+          
+          {/* Question text with integrated LaTeX */}
+          <div className="mb-2">
+            <LatexParser text={question.question} />
+          </div>
           
           {/* Add graph if question has graph data */}
           {question.graph && (
@@ -213,12 +232,8 @@ const QuizContent = ({ questions, onQuizComplete }) => {
               />
             </div>
           )}
-          
-          <div className="mb-4">
-            <InlineMath>{question.latex}</InlineMath>
-          </div>
         </div>
-
+  
         <div className="grid gap-4">
           {question.options.map((option, index) => (
             <button
@@ -226,14 +241,14 @@ const QuizContent = ({ questions, onQuizComplete }) => {
               onClick={() => handleAnswer(index)}
               className="w-full text-left p-4 border rounded hover:bg-gray-100 transition-colors"
             >
-              {option}
+              <LatexParser text={option} />
             </button>
           ))}
         </div>
       </div>
     </div>
   );
-};
+}
 
 const StartPage = ({ onStartQuiz }) => {
   const [fileError, setFileError] = useState(null);
@@ -246,16 +261,16 @@ const StartPage = ({ onStartQuiz }) => {
       if (!Array.isArray(data)) {
         throw new Error('Question set must be an array');
       }
-
+  
       // Check each question's format
       data.forEach((q, idx) => {
-        const requiredFields = ['id', 'question', 'latex', 'options', 'correct', 'topic', 'concept'];
+        const requiredFields = ['id', 'question', 'options', 'correct', 'topic', 'concept'];
         requiredFields.forEach(field => {
           if (!(field in q)) {
             throw new Error(`Question ${idx + 1} is missing the ${field} field`);
           }
         });
-
+  
         // Validate specific fields
         if (!Array.isArray(q.options)) {
           throw new Error(`Question ${idx + 1} options must be an array`);
@@ -267,7 +282,7 @@ const StartPage = ({ onStartQuiz }) => {
           throw new Error(`Question ${idx + 1} has an invalid correct answer index`);
         }
       });
-
+  
       return true;
     } catch (error) {
       setFileError(error.message);

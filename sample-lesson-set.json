@@ -1,0 +1,44 @@
+[
+    {
+      "id": 1,
+      "question": "What is the derivative of f(x) = x²?",
+      "latex": "\\frac{d}{dx}(x^2)",
+      "options": ["x", "2x", "2", "x²"],
+      "correct": 1,
+      "topic": "Calculus",
+      "concept": "Derivatives"
+    },
+    {
+      "id": 2,
+      "question": "In the equation E = mc², what does c represent?",
+      "latex": "E = mc^2",
+      "options": [
+        "Speed of light",
+        "Speed of sound",
+        "Planck's constant",
+        "Gravitational constant"
+      ],
+      "correct": 0,
+      "topic": "Physics",
+      "concept": "Special Relativity"
+    },
+    {
+        "id": 1,
+        "question": "What is the trend shown in the graph?",
+        "latex": "",
+        "options": ["Increasing", "Decreasing", "Constant", "Parabolic"],
+        "correct": 0,
+        "topic": "Data Analysis",
+        "concept": "Trends",
+        "graph": {
+          "type": "line",
+          "data": [
+            {"x": 0, "y": 1},
+            {"x": 1, "y": 2},
+            {"x": 2, "y": 3},
+            {"x": 3, "y": 4},
+            {"x": 4, "y": 5}
+          ]
+        }
+      }
+]

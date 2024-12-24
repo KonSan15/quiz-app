@@ -124,14 +124,13 @@ const QuizContent = ({ questions, onQuizComplete }) => {
   const [startTime, setStartTime] = useState(Date.now());
   const [showResults, setShowResults] = useState(false);  
 
-
   useEffect(() => {
     setStartTime(Date.now());
   }, [currentQuestion]);
 
-  const handleAnswer = (optionIndex) => {
+  const handleAnswer = (optionIndex, skipped = false) => {
     const timeSpent = (Date.now() - startTime) / 1000; // Convert to seconds
-    const isCorrect = optionIndex === questions[currentQuestion].correct;
+    const isCorrect = skipped ? null : optionIndex === questions[currentQuestion].correct;
     
     setAnswers([...answers, {
       questionId: questions[currentQuestion].id,
@@ -139,7 +138,7 @@ const QuizContent = ({ questions, onQuizComplete }) => {
       concept: questions[currentQuestion].concept,
       timeSpent,
       isCorrect,
-      userAnswer: optionIndex
+      userAnswer: skipped ? 'skipped' : optionIndex
     }]);
 
     if (currentQuestion < questions.length - 1) {
@@ -158,7 +157,7 @@ const QuizContent = ({ questions, onQuizComplete }) => {
           answer.topic,
           answer.concept,
           answer.timeSpent.toFixed(2),
-          answer.isCorrect,
+          answer.isCorrect === null ? 'skipped' : answer.isCorrect,
           answer.userAnswer
         ].join(","))
       ).join("\n");
@@ -177,12 +176,17 @@ const QuizContent = ({ questions, onQuizComplete }) => {
       time: answer.timeSpent
     }));
 
+    const answeredQuestions = answers.filter(a => a.isCorrect !== null);
+    const correctAnswers = answers.filter(a => a.isCorrect === true);
+    const skippedQuestions = answers.filter(a => a.isCorrect === null);
+
     return (
       <div className="p-6 max-w-4xl mx-auto">
         <div className="bg-white rounded-lg shadow-lg p-6">
           <h2 className="text-2xl font-bold mb-4">Quiz Results</h2>
           <div className="mb-6">
-            <p className="mb-2">Correct Answers: {answers.filter(a => a.isCorrect).length}/{questions.length}</p>
+            <p className="mb-2">Correct Answers: {correctAnswers.length}/{questions.length}</p>
+            <p className="mb-2">Skipped Questions: {skippedQuestions.length}</p>
             <p className="mb-4">Average Time per Question: {
               (answers.reduce((acc, curr) => acc + curr.timeSpent, 0) / answers.length).toFixed(2)
             } seconds</p>
@@ -218,12 +222,10 @@ const QuizContent = ({ questions, onQuizComplete }) => {
         <div className="mb-6">
           <h2 className="text-xl font-bold mb-2">Question {currentQuestion + 1}/{questions.length}</h2>
           
-          {/* Question text with integrated LaTeX */}
           <div className="mb-2">
             <LatexParser text={question.question} />
           </div>
           
-          {/* Add graph if question has graph data */}
           {question.graph && (
             <div className="mb-4">
               <QuestionGraph 
@@ -244,11 +246,20 @@ const QuizContent = ({ questions, onQuizComplete }) => {
               <LatexParser text={option} />
             </button>
           ))}
+          
+          <button
+            onClick={() => handleAnswer(null, true)}
+            className="w-full text-left p-4 border rounded bg-gray-50 hover:bg-gray-100 transition-colors text-gray-600"
+          >
+            Skip this question
+          </button>
         </div>
       </div>
     </div>
   );
 }
+
+
 
 const StartPage = ({ onStartQuiz }) => {
   const [fileError, setFileError] = useState(null);
